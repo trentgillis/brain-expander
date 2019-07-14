@@ -69,7 +69,7 @@ const policies = (listOfPolicies = [], action) => {
   return listOfPolicies;
 };
 
-// A store in redux is the assembly of collection of differenct reducers and action creators
+// A store in redux is the assembly of collection of different reducers and action creators
 
 const { createStore, combineReducers } = Redux;
 
