@@ -1,0 +1,12 @@
+<!-- Pipes ( | ) are a way to write display-value transformations that you can declare in your HTML -->
+<h2>{{ hero.name | uppercase }} Details</h2>
+<div><span>id: {{ hero.id }}</span></div>
+<div><span>name: {{ hero.name }}</span></div>
+<div>
+  <label>name:
+    <!-- ngModel is Angular's two -way data binding syntax -->
+    <!-- ^ Two way data binding mans data flow from the component class out to the screen and from the screen back to the component class -->
+    <!-- Here we bind the hero.name property both from the hero.name property to the textbox and from the textbox to the hero.name property -->
+    <input [(ngModel)]="hero.name" placeholder="name">
+  </label>
+</div>
