@@ -1,3 +1,4 @@
+// The state argument is whatever was returned from this reducer the last time it ran
 export default (state= [], action) => {
   switch (action.type) {
     case "FETCH_USER":
@@ -5,4 +6,4 @@ export default (state= [], action) => {
     default:
       return state;
   }
-}
+};
