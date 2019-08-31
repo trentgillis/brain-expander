@@ -27,7 +27,7 @@ class Button extends React.Component {
         <LanguageContext.Consumer>
           {/* Whenever we place a consumer component we always provide one child to it */}
           {/* ^ the child is always a function that will be automatically called by the consumer with whatever value is currently in our pipe */}
-          {value => value === 'english' ? 'Submit' : 'Voorleggen'}
+          {({language}) => language === 'english' ? 'Submit' : 'Voorleggen'}
         </LanguageContext.Consumer>
       </button>
     );
