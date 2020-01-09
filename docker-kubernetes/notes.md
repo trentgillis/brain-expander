@@ -53,7 +53,60 @@ The below are the steps that occur after running `docker run hello-world`
 ![docker run diagram](./resources/images/notes-images/02/docker-run.png)
 
 * After specifying the image name, we can supply a command to override the default run command of the container we are attempting to run
+* The `docker run` command is identical to running the `docker create` and `docker start` commands together in that order
+
+![docker run and docker start commands](./resources/images/notes-images/02/docker-create-start.png)
+
+* `docker create` prepares an images file snapshot for use within a container
+  * After running `docker create`, the id of the container create will be output for use with the `docker start` command
+* `docker start` executes the run commands specified within an image
+  * Using the `-a` flag will print out any output generated from running the container, not using the flag will result in the id of the container being output
 
 ### Listing Running Containers
 
 * A list of running Docker containers can be displayed by running the `docker ps` command
+* Running `docker ps --all` will display all containers that we have ever created, not just the ones that are currently running
+
+### Restarting Containers
+
+* To restart a stopped container, we can run the `docker start` command using the stopped containers id
+  * When restarting a stopped container, the command used when originally starting the container will be used. This means that if an override command was used to originally start the container, that command will be the command that is used when restarting the container
+
+### Removing Stopped Containers
+
+* To remove stopped containers, we can run `docker system prune`, which will remove all stopped containers, all networks not used by at least one container, all dangling images and the build cache (downloaded images)
+
+### Retrieving Log Outputs From Containers
+
+* To get logs from a container we can use the `docker logs` command
+
+![docker logs command diagram](resources/images/notes-images/02/docker-logs.png)
+
+### Stopping Running Containers
+
+* To stop a running container, we can run the command `docker stop` or `docker kill`
+* The following diagram lays out what occurs when the `docker stop` command is executed on a container
+
+![docker stop diagram](resources/images/notes-images/02/docker-stop.png)
+
+* Containers are stopped by issuing a SIGTERM or SIGKILL command (done automatically by `docker stop` or `docker kill` respectively)
+  * SIGTERM is a command that can be issued to a docker container to stop the container and is issued upon running `docker stop`
+    * It gives the process a little bit of time to shut itself down and perform any necessary cleanup
+    * Many programming languages can listen for the SIGTERM command to be issued and perform any cleanup before ending execution
+    * If a container fails to respond to a `docker stop` within 10 seconds, Docker will automatically run the `docker kill` command on the container
+  * SIGKILL is another command that can be issued to a docker container to stop the container and is issued upon running `docker kill`
+    * It tells the container to shut down immediately without any time to do any additional work/cleanup
+
+### Multi-command Containers
+
+* Commands can be issued within a docker container using `docker exec`
+
+![docker exec command diagram](resources/images/notes-images/02/docker-exec.png)
+
+* The `-it` flag allows us to type input directly into the container
+  * The `-i` flag attaches our terminal to the stdin process of the new running process (ie. bash, redis-cli)
+  * The `-t` flag ensures that all of the text being input/output to the process are output in a nice format (the format we expect from running that process will not appear when not using the `-t` flag and only using the `-i` flag)
+* Using the `docker exec` command with the `-it` flag, we can execute a shell within our container
+  * For example, running `docker exec -it <container_id> bash` will give us access to a bash shell within our container
+  * It is also possible to open a shell when starting a container (this will override the default command) by running `docker run -it <image_name> sh` (sh can be replaced with bash/zsh/etc... if available within that container)
+    * Typically we will want to start our container using its default command and `docker exec` in a shell within our running container
