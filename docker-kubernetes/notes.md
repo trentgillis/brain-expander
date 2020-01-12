@@ -110,3 +110,75 @@ The below are the steps that occur after running `docker run hello-world`
   * For example, running `docker exec -it <container_id> bash` will give us access to a bash shell within our container
   * It is also possible to open a shell when starting a container (this will override the default command) by running `docker run -it <image_name> sh` (sh can be replaced with bash/zsh/etc... if available within that container)
     * Typically we will want to start our container using its default command and `docker exec` in a shell within our running container
+
+## Section 3: Building Custom Images Through Docker Server
+
+### Creating Docker Images
+
+* To create a custom Docker image, we need to create a Dockerfile
+  * A Dockerfile is a plain text file that has contains configuration specifying how our container will behave
+
+![create custom docker image](./resources/images/notes-images/03/creating-docker-image.png)
+
+* Inside of a Dockerfile, we need to specify a base image, commands to install additional programs and a command to run on container startup
+
+![Dockerfile flow](resources/images/notes-images/03/docker-file-flow.png)
+
+* Below is an example of a Dockerfile that creates an image that runs redis-server
+
+```Dockerfile
+# Use an existing docker image as a base
+FROM alpine
+
+# Download and install a dependency
+RUN apk add --update redis
+
+# Tell the image what to do when it starts as a container
+CMD ["redis-server"]
+```
+
+* The image specified by the above Dockerfile can then be built by navigating the the directory containing the Dockerfile and running `docker build .`
+
+![Dockerfile instructions](resources/images/notes-images/03/dockerfile-instructions.png)
+
+* The most important Dockerfile instructions to understand and know are `FROM`, `RUN`, and `CMD`
+  * The `FROM` instruction specifies what image we want to use as a base for our custom image
+  * The `RUN` instruction is used to execute some command while preparing our custom image
+  * The `CMD` specifies what command to run when starting our container
+
+### What's a Base Image?
+
+* Writing a Dockerfile == Being given a computer with no OS and being told to install Chrome
+* The flow of installing chrome when given a computer with no operating system can be related with writing a Dockerfile in the following way:
+
+![No OS Chrome](./resources/images/notes-images/03/chrome-no-os.png)
+
+* The base image is the initial starting point for a Docker image
+
+### The Build Process In Detail
+
+* Below is a diagram outlining the steps that occur when running `docker build` on our Dockerfile
+
+![Docker build process diagram](./resources/images/notes-images/03/docker-build-process-diagram.png)
+
+* When rebuilding docker images from dockerfiles, only the steps from the first changed line down will be run
+  * This is because Docker caches the steps of building a docker container and uses previously build intermediate images when rebuilding docker images
+
+### Tagging an Image
+
+* Tagging an image allows us to run custom docker containers without the need of having the images id
+  * Images can be tagged using the `-t` flag when running `docker build`
+* The convention for tagging images is as follows:
+
+![docker image tag convention](./resources/images/notes-images/03/image-tag-convention.png)
+
+* Thus, runnin the command `docker build -t trentgillis/redis:latest .` will allow us to run our container by using `docker run trentgillis/redis:latest` rather than using the images id
+  * If we do not put a version at the end of our tag, latest will be used by default
+  * Technically, the tag for an image is just the version with the other parts being just the Docker ID and the repository for that image
+  
+* It is also possible to create images from docker containers
+  * ie. we can run a container manually and then create an image from that container
+  * Images can be created from containers using the `docker commit` command
+  * An example of the use of the `docker commit` command is as follows: `docker commit -c 'CMD ["redis-server"]' 4e5adc049458`
+    * The `-c` flag allows us to specify the default command for the created image
+    * The `4e5adc049458` argument passed to `docker commit` is the ID of the running container we want to create the image from
