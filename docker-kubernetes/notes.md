@@ -182,3 +182,32 @@ CMD ["redis-server"]
   * An example of the use of the `docker commit` command is as follows: `docker commit -c 'CMD ["redis-server"]' 4e5adc049458`
     * The `-c` flag allows us to specify the default command for the created image
     * The `4e5adc049458` argument passed to `docker commit` is the ID of the running container we want to create the image from
+
+## Section 4: Making Real Projects with Docker
+
+* When using base images, the `alpine` tag signifies an image that is as small and compact as possible
+* When working with project files, none of the project files used in a project are available within the docker container by default
+  * To make files available within our Docker containers, we need to make use of the `COPY` instruction in our Dockerfile
+  
+![Dockerfile copy instruction](resources/images/notes-images/04/dockerfile-copy.png)
+
+* By default, no traffic coming into our localhost network is routed into our container
+  * Out Docker container has its own set of isolated ports, but by default, traffic to ports on the host computer are not routed to the ports of the docker container. To fix this we need to setup port mappings between the host machine and the docker container
+  * A port mapping tells the host machine to automatically route requests to a certain port to a port inside of the docker container
+  * Setting up port mappings is a change made to the `docker run` command used to start the container
+    * To setup a port mapping we add the  `-p` flag to the `docker run` command
+
+![docker run port mapping](resources/images/notes-images/04/docker-run-ports.png)
+
+* The localhost and container ports in the port mapping do not need to be identical
+  * For example, we can direct traffic to port 5000 on the host machine to port 8080 in the Docker container
+
+* By default, files copied into the container using the `COPY` instruction are copied into the root directory of the docker container. THIS IS NOT BEST PRACTICE!
+  * We can use the `WORKDIR` instruction to specify a working directory within the docker container to copy all of our project files to
+  
+![Dockerfile workdir](resources/images/notes-images/04/dockerfile-workdir.png)
+
+* The usr directory is a safe place to put our applications, however it is not completely agreed upon which directory is the best place for an app to live inside of a docker container
+
+* In order to avoid unnecessary steps when rebuilding docker images, smartly ordering the commands can help with quick docker image rebuilds by taking advantage of the way that caching works
+  * ie. copy package.json into the container, run npm install and then copy the rest of the files into the image. This will result in not needing to run npm install every time a change occurs in the non-package.json project files
