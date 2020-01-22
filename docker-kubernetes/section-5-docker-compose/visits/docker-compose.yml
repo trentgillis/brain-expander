@@ -1,0 +1,14 @@
+version: '3'
+# Services can be thought of as individual docker containers
+services: 
+  redis-server:
+    # Image allows us to specify the image being used for that docker container
+    image: 'redis'
+  node-app:
+    restart: always
+    # Build allows us to specify a directory with a Dockerfile to build the image from to be used
+    # for the creation of the container
+    build: .
+    ports:
+      # First number is the port on our local machine and the second number is the port within the container
+      - '8081:8081'

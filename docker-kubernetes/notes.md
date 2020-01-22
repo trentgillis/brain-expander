@@ -54,6 +54,7 @@ The below are the steps that occur after running `docker run hello-world`
 
 * After specifying the image name, we can supply a command to override the default run command of the container we are attempting to run
 * The `docker run` command is identical to running the `docker create` and `docker start` commands together in that order
+* Executing `docker run`  with the `-d` flag will start that container in the background
 
 ![docker run and docker start commands](./resources/images/notes-images/02/docker-create-start.png)
 
@@ -211,3 +212,52 @@ CMD ["redis-server"]
 
 * In order to avoid unnecessary steps when rebuilding docker images, smartly ordering the commands can help with quick docker image rebuilds by taking advantage of the way that caching works
   * ie. copy package.json into the container, run npm install and then copy the rest of the files into the image. This will result in not needing to run npm install every time a change occurs in the non-package.json project files
+
+## Section 5: Docker Compose with Multiple Local Containers
+
+* Docker Compose is a separate CLI that is used to start up multiple Docker containers at the same time
+  * It automates some of the long-winded arguments we were passing to `docker run`
+* The docker-compose.yml contains all of the options we'd normally pass to docker-cli
+
+![docker compose diagram](resources/images/notes-images/05/docker-compose.png)
+
+* `services` in a docker compose file can be thought of as services
+* Docker Compose automatically sets up networks connecting docker containers
+* Below is an example of a docker-compose.yml file 
+
+```Dockerfile
+version: '3'
+# Services can be thought of as individual docker containers
+services: 
+  redis-server:
+    # Image allows us to specify the image being used for that docker container
+    image: 'redis'
+  node-app:
+    restart: always
+    # Build allows us to specify a directory with a Dockerfile to build the image from to be used
+    # for the creation of the container
+    build: .
+    ports:
+      # First number is the port on our local machine and the second number is the port within the container
+      - '8081:8081'
+```
+
+* Running `docker-compose up` is like running `docker run myimage`
+* Running `docker-compose up --build` is like running `docker build .` followed by `docker run myimage`
+* Running `docker-compose up -d` will start the containers in the background
+* Running `docker-compose down` will stop all of the running containers specified in the docker compose file
+
+### Automatic Container Restarts
+
+* To automatically restart containers, we have to setup a restart policy in our `docker-compose.yml`
+  * For example, to always restart the container, we can add `restart: always` to our node-app service
+  * When restarting a container, Docker automatically uses the existing container and restarts the service inside of it. It does not kill the container and use a new one
+  * Depending on the restart policy used, Docker will only restart containers depending on why they failed
+    * ie. The `on-failure` policy will only restart the container if it crashed due to a failure
+  * The restart policies available are:
+    * `"no"`: Never attempt to restart this container if it stops or crashes
+      * Note when using the `"no"` policy that the quotes are required (due to no being the same as false in yaml)
+    * `always`: If this container stops for *any reason* always attempt to restart it
+    * `on-failure`: Only restart if the container stops with an error code
+    * `unless-stopped`: Always restart unless we (the developers) forcibly stop it
+* The status of containers started via docker compose can be see using the `docker-compose ps` command from the same directory as the docker-compose.yml file
