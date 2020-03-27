@@ -1,0 +1,34 @@
+{
+  "users": [
+    {
+      "id": "23",
+      "firstName": "Trent",
+      "age": 24,
+      "companyId": "1"
+    },
+    {
+      "id": "40",
+      "firstName": "Chris",
+      "age": 32,
+      "companyId": "2"
+    },
+    {
+      "id": "41",
+      "firstName":  "Nick",
+      "age": 25,
+      "companyId": "2"
+    }
+  ],
+  "companies":  [
+    {
+      "id": "1",
+      "name": "Apple",
+      "description": "We sell fruit... not phones..."
+    },
+    {
+      "id": "2",
+      "name": "Google",
+      "description": "We sell phones... not fruit..."
+    }
+  ]
+}
