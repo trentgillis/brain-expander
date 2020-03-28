@@ -102,3 +102,167 @@ This file contains all of the notes taken during the completion of the GraphQL w
 return axios.get(`http:localhost:3000/users/${args.id}`)
   .then(resp => resp.data);
 ```
+
+## Section 4: Fetching Data with Queries
+
+#### Nested Queries
+
+* We treat associations between types exactly as though it were another field. So if a user has a company type we add a company field where we specify the type and resolve function ourselves.
+* When associating types, we specify a `resolve`  function such  that the type knows where to get the information for that associated type.
+  * We need the  `resolve` function because we are using an object key that is different than the one being returned by the service used to fetch the data. Therefore to teach GraphQL how to define the different data, we give the field a `resolve` function.
+* When using the resolve function on a type, the `parentValue` will be the properties of the user that was just fetched. We can use this information to populate a field on a type with the correct information from another type.
+* Below is an example of associating types:
+```javascript
+const CompanyType = new GraphQLObjectType({
+  name: "Company",
+  fields: {
+    id: { type: GraphQLString },
+    name:  { type: GraphQLString },
+    description: { type: GraphQLString }
+  }
+});
+
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: () => ({
+    id: { type: GraphQLString },
+    firstName: { type: GraphQLString },
+    age: { type: GraphQLInt },
+    company: {
+      type: CompanyType,
+      resolve(parentValue, args) {
+        return axios.get(`http://localhost:3000/companies/${parentValue.companyId}`)
+          .then(res => res.data);
+      }
+    }
+  })
+});
+```
+
+#### Multiple RootQuery Entry Points
+
+* To allow access to multiple types of data from GraphQL queries, we can add multiple types to our `RootQuery` object.
+* For example:
+```javascript
+const RootQuery = new GraphQLObjectType({
+  name: 'RootQueryType',
+  fields:  () => ({
+    user: {
+      type: UserType,
+      args: { id: { type: GraphQLString } },
+      resolve(parentValue, args) {
+        return axios.get(`http://localhost:3000/users/${args.id}`)
+          .then(res => res.data);
+      }
+    },
+    company: {
+      type: CompanyType,
+      args: { id: { type: GraphQLString } },
+      resolve(parentValue, args) {
+        return axios.get(`http://localhost:3000/companies/${args.id}`)
+          .then(res => res.data);
+      }
+    },
+  })
+});
+```
+
+#### Bidirectional Relations
+
+* When specifying a field that will return multiple of some GraphQL type, we need to pass the type to the GraphQLList constructor, ie `new GraphQLList(OurType)`.
+* To resolve circular references between our GraphQL types, we must wrap  the `fields` object in our types with an arrow function.
+
+#### Query Fragments
+
+* Another format for GraphQL queries (that does not change the behavior of the query at all) is as follows:
+
+```javascript
+query {
+  company(id: "1") {
+    id,
+    name,
+    description
+  }
+}
+```
+
+* In addition to adding the query token before the first opening brace, we can also name our query by adding a name after the `query` token.
+  * This can be useful for frontends that are making many different queries. An example of naming a query can be seen below
+
+```javascript
+query findCompany {
+  company(id: "1") {
+    id,
+    name,
+    description
+  }
+}
+```
+
+* We can name the result of a queries result. This allows us to get around issues requesting data of the same type multiple times. An example of this is below
+
+```javascript
+query findCompany {
+  apple: company(id: "1") {
+    id,
+    name,
+    description
+  }
+  google: company(id: "1") {
+    id,
+    name,
+    description
+  }
+}
+```
+
+* Query fragments are essentially list of properties that we want to get off of a type during a query.
+  * The purpose of fragments is to reduce the amount of copy / paste of properties being retrieved during a query.
+  * An example of a query fragment and its use can be seen below:
+
+```javascript
+query findCompany {
+  apple: company(id: "1") {
+    ...companyDetails
+  }
+  google: company(id: "2") {
+    ...companyDetails
+  }
+
+  fragment companyDetails on Company {
+    id,
+    name,
+    description
+  }
+}
+```
+
+#### Mutations
+
+* We can use GraphQL to modify the data in our data store using mutations. They can be used to create, update or delete records from our data store. Essentially, we need mutations for CRUD.
+* The process of creating a mutation look very similar to the process of creating a new type.
+  * It's important to note that the fields on our mutation type should describe the action that the mutation is going to perform.
+  * The type on our mutations fields is the type of data we are going to eventually return from our resolve function.
+  * To add validation to our args, we can wrap the args type with the `GraphQLNonNull` helper. This helper is a low level piece of validation that makes sure that a value is actually passed in. For example, in the following `args` object, `firstName` and `age` cannot be null:
+
+  ```javascript
+  args: {
+    firstName: { type: new GraphQLNonNull(GraphQLString) },
+    age: { type: new GraphQLNonNull(GraphQLInt) },
+    companyId: { type: GraphQLString }
+  }
+  ```
+
+  * Queries for sending mutations follow a slightly different syntax than 'normal' queries. An example of one can be found below.
+
+  ```javascript
+  mutation {
+    addUser(firstName: "Trentin", age: 26) {
+      id,
+      firstName,
+      age
+    }
+  }
+  ```
+
+* A quick not on HTTP requests. A `PUT`request is used when we want to completely replace a record in our data store with a new record. A `PATCH` request is used when we want to update a the properties on a record in our data store.

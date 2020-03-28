@@ -1,12 +1,6 @@
 {
   "users": [
     {
-      "id": "23",
-      "firstName": "Trent",
-      "age": 24,
-      "companyId": "1"
-    },
-    {
       "id": "40",
       "firstName": "Chris",
       "age": 32,
@@ -14,12 +8,17 @@
     },
     {
       "id": "41",
-      "firstName":  "Nick",
+      "firstName": "Nick",
       "age": 25,
       "companyId": "2"
+    },
+    {
+      "firstName": "Trent",
+      "age": 24,
+      "id": "fJ3frix"
     }
   ],
-  "companies":  [
+  "companies": [
     {
       "id": "1",
       "name": "Apple",
