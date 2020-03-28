@@ -266,3 +266,16 @@ query findCompany {
   ```
 
 * A quick not on HTTP requests. A `PUT`request is used when we want to completely replace a record in our data store with a new record. A `PATCH` request is used when we want to update a the properties on a record in our data store.
+
+ ## Section 5: The GraphQL Ecosystem
+
+ * No matter what frontend and backend client is used, they all speak the same 'language' and thus can communicate with eachother. It's really just unformatted data being passed between the client and the server.
+ * The GraphQL client used on the frontend will be used to write queries and pass them to our GraphQL server to get data back and display the data on the screen.
+ * The big GraphQL clients currently being used in the real world:
+   * Lokka - As simple as possible. Basic queries and mutations. Some simple caching.
+   * Apollo Client - Produced by the same guys as MeteorJS. Good balance between features and complexity.
+   * Relay - Amazing performance for mobile. By far the most complex. This is what is being used by the FaceBook team.
+* In addition to there being multiple GraphQL client libraries, there are also multiple GraphQL server libraries, specifically Apollo Server and GraphQL express in the JavaScript ecosystem.
+  * GraphQL Express is refered to as the reference implementation of GraphQL. It is the official implementation of GraphQL that FaceBook maintains. It is the spec of how a server can be implemented using GraphQL.
+  * Apollo Server is a different implementation of how to implement a server using GraphQL.
+  * It is important to note that not one of these libraries is better than the other, but the GraphQL Express implementation is far less likely to receive API changes in the future.
