@@ -279,3 +279,18 @@ query findCompany {
   * GraphQL Express is refered to as the reference implementation of GraphQL. It is the official implementation of GraphQL that FaceBook maintains. It is the spec of how a server can be implemented using GraphQL.
   * Apollo Server is a different implementation of how to implement a server using GraphQL.
   * It is important to note that not one of these libraries is better than the other, but the GraphQL Express implementation is far less likely to receive API changes in the future.
+
+## Section 6: Clientside GraphQL
+
+* There are two major pieces to using GraphQL in clientside code.
+  * Apollo Store (AKA Apollo Client) - This is the piece that communicates directly with the GraphQL server and stores the data that is returned from it. It is a clientside repository of all of the data that comes back from the GraphQL server. It is an abstract piece of technology that doesn't care what clientside technologies we are using.
+    * When using the Apollo Client, it assumes that the GraphQL server is hosted at the `/graphql` route.
+  * Apollo Provider - The provider takes data from the Apollo Store and inject it into our React application. It is the glue layer between the Apollo Store and our React application.
+* The GraphQL + React Strategy
+  1. Identify data required
+  2. Write query in Graphiql (for practice) and in component file
+  3. Bond query and component
+  4. Access data
+* Remember that queries are not JavaScript code. In order to write queries in our React components we need to make use of the `graphql-tag` library.
+* The data retrieved from executing a query is stored inside of the components `props` object.
+  * Executing our request results in the component being re-rendered with the `props` object containing the appropriate data.
