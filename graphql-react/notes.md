@@ -294,3 +294,11 @@ query findCompany {
 * Remember that queries are not JavaScript code. In order to write queries in our React components we need to make use of the `graphql-tag` library.
 * The data retrieved from executing a query is stored inside of the components `props` object.
   * Executing our request results in the component being re-rendered with the `props` object containing the appropriate data.
+
+## Section 6: Gotchas with Queries in React
+
+* When querying data from GraphQL in React, we need to make sure our data has been returned from our GraphQL server before attempting to render the data in the browser.
+  * We can get around these errors using the `loading` flag that is provide to us on our data object.
+* When using GraphQL in React, we typically want to centralize our queries as much as possible.
+* The approach used with GraphQL data fetching is very similar to the approach used with Redux.
+* Typically, when using `react-router`, we will wrap our `Router` component with the `ApolloProvider` component.
