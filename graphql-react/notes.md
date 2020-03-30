@@ -302,3 +302,31 @@ query findCompany {
 * When using GraphQL in React, we typically want to centralize our queries as much as possible.
 * The approach used with GraphQL data fetching is very similar to the approach used with Redux.
 * Typically, when using `react-router`, we will wrap our `Router` component with the `ApolloProvider` component.
+
+## Section 7: Frontend Mutations
+
+* To allow us to communicate data into our mutation from a React component, we need to make use of `Query Variables` in GraphQL.
+  * Query variables are used to inject variables from outside the query into the query. This is helpful for mutations, filtering, pagination, etc.
+    * An example of a mutation using query variables can be seen below:
+    ```javascript
+    mutation AddSong($title: String) {
+      addSong(title: $title) {
+        id
+        title
+      }
+    }
+    ```
+    * Where the query variables for this mutation are as follows:
+    ```javascript
+    {
+      "title": "Sprite vs Coke"
+    }
+    ```
+* When we wrap a mutation in our React component, we get access to a property called `props.mutate`.
+  * The mutate property is a function that we can call that runs our mutation
+  * We can pass our mutation variables by passing in a configuration object with a variables object containing all of the query variables we want available to our mutation.
+  * The mutate method returns a promise, so we can perform some action after data is returned, or perform any needed validation / throw any errors we need to throw after data is returned.
+* When a query has already been run on a page, the query is only executed one time and is not automatically rerun. This is a frequent problem in the Apollo ecosystem and needs to be accounted for when lists are being used.
+  * To get around this we need to re-fetch the query by passing the `refetchQueries` option to the configuration object passed to the mutate method. This property takes a list of queries that we want to be re-fetched.
+* In order to avoid rewriting queries in multiple locations, we typically should store all of our queries in a separate file to be imported and used in the different components.
+* The `graphql` helper function used to wire up our queries and mutations to our React app does not accept multiple arguments. Because of this, when we have multiple queries / mutations being used in a single component, we have to use multiple instances of the `graphql` helper.
