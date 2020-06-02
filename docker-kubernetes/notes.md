@@ -261,3 +261,77 @@ services:
     * `on-failure`: Only restart if the container stops with an error code
     * `unless-stopped`: Always restart unless we (the developers) forcibly stop it
 * The status of containers started via docker compose can be see using the `docker-compose ps` command from the same directory as the docker-compose.yml file
+
+## Section 6: Creating a Production Grade Workflow
+
+* A production grade workflow follows the following typical steps:
+  1. Developer makes changes on a non-master (feature) branch
+  2. Developer pushes changes to remote repository
+  3. Developer makes pull request to merge changes on feature branch into the master branch
+  4. Code is pushed to Travis CI which runs all code tests
+  5. If all tests run by Travis CI run successfully, code is automatically deployed to AWS server
+* Note that it is not necessary to use Docker in a production grade development workflow, but it does make a lot of the tasks associated with this workflow easier
+
+### Building Our Development Dockerfile
+
+* We want to make use of a separate Dockerfile for development, which we're going to call `Dockerfile.dev`
+* In order to build a Docker image using a `Dockerfile.dev` Dockerfile we need to use the `-f` flag
+  * For example: `docker build -f Dockerfile.dev .`
+* NOTE: Due to changes to `create-react-app` we need to run our React docker containers using the `-it` flag 
+  * For example: `docker run -it -p  3000:3000 CONTAINER_ID`
+* To avoid having to rebuild the image every time we make a change inside of our code we need to make use of Docker volumes
+
+### Docker Volumes
+
+* With a Docker volume we essentially setup a placeholder inside of our Docker container that references the files and folders on our host machine
+  * A volume can be thought of as a mapping between a file/folder on the host system and a file/folder inside of the Docker container
+* To setup a volume inside of our containers we can use the `-v` flag
+  * For example: `docker run -it -p 3000:3000 -v /app/node_modules -v $(pwd):/app IMAGE_ID`
+  * The `-v $(pwd):/app` part of the above command mounts the contents of the present working directory on the host machine to the `/app` directory inside of the Docker container
+  * The `-v /app/node_modules` puts a bookmark on the node_modules directory which tells Docker to not try to map the node_modules directory inside of the container to a node_modules directory on the host machine
+    * To bookmark a directory, we simply need to pass the directory we want to bookmark as an argument to the `-v` flag without using the colon syntax
+
+### Production Workflow with Docker Compose
+
+* As our command for running out development React container becomes more complicated, it can become extremely useful to begin using `docker-compose`
+* To build our Docker image using the `Dockerfile.dev` file via `docker-compose` we need to update the `build` section of our compose file to be something like the following:
+  ```yaml
+  build:
+    context: .
+    dockerfile: Dockerfile.dev
+  ```
+* Even though the `COPY . .` line in the development Dockerfile is not strictly necessary when using Docker Compose, it is often still worth keeping for cases where compose is not use or the Dockerfile is used as a template in the creation of a different Dockerfile where that COPY may be necessary
+
+### Executing Test in Docker
+
+* To run the test suite in our Docker container, we simply need to update our `RUN` command when running our container using the `Dockerfile.dev` with a different command to run our tests
+  * For example: `docker run -it IMAGE_ID npm run test`
+* When running our test suite, we should use the `-it` flag to attach our terminal to the containers stdin and setup a sudo terminal so that we can interact with out tests CLI inside of the container
+* In order to setup automatic test reloading, we need to setup volumes in our testing Docker container in the same way we setup volumes for running the application in development
+  * This can be down via a service in our `docker-compose.yaml` file, via the `-v` flag when running the container, or via a `docker exec -it  IMAGE_ID npm run test` on an already running container
+* We can setup a test container via `docker-compose` by adding the following to our compose yaml:
+```yaml
+test:
+  build:
+    context: .
+    dockerfile: Dockerfile.dev 
+  volumes:
+    - /app/node_modules
+    - .:/app
+  command: ["npm", "run", "test"]
+```
+* `docker attach` can be used to attach to the stdin, stdout and stderr of a running Docker container
+* Unfortunately, there is no good way of attaching to stdin when running a test suite via Docker Compose to interact with the test suite CLI
+
+### Running Our React App in a Production Environment
+
+* Because we are not running our development web server when deploying our application in a production environment, we need some sort of production server to host our application
+  * For this we will be using Nginx as our production web server
+* In order to build our production React bundle and deploy it to Nginx, we will have to perform a multi-step Docker build
+  * This multi-step build process will consist of a **Build phase** which makes use of the node:alpine base image to build the production bundles of our React application and a **Run Phase** which will make use of the Nginx base image to take the results of our build phase to host our react application on the Nginx web server
+  * We can tag sections of our Dockerfile using the `as` token and passing it the name of the phase
+    * For example: `FROM node:alpine as builder` tags this section of the Dockerfile with the builder phase
+    * Any single phase can only have a single `FROM` statement
+    * We don't have to provide a phase to the final phase of a multi-step build
+  * To copy resources from a different phase, we need to use the `--from` argument to the `COPY` statement
+    * For example: `FROM --phase=builder /app/build /usr/share/nginx/html`
