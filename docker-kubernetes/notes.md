@@ -335,3 +335,47 @@ test:
     * We don't have to provide a phase to the final phase of a multi-step build
   * To copy resources from a different phase, we need to use the `--from` argument to the `COPY` statement
     * For example: `FROM --phase=builder /app/build /usr/share/nginx/html`
+
+## Section 7: Continuous Integration and Deployment with AWSss
+
+* The entire idea of TravisCI is to watch for any time we push changes to our GitHub repo where anytime we push code to GitHub, it tap on the shoulder of Travis and informs it that there is new code present in the repository
+  * Once Travis has been informed that new code is present in the repository, it pull down all of the new code and then allows us the ability to do some amount of work
+* TravisCI is typically used for testing and deploying codes
+* In order to tell Travis what we want it to do on code pushes, we need to make use of a `.travis.yml` file
+  * The `.travis.yml` file allows us to provide Travis with a set of directions telling it exactly what we want it to do
+  * For our purposes, we want Travis to perform the following steps:
+    1. Tell Travis we need a copy of Docker running
+    2. Build our image using `Dockerfile.dev`
+    3. Tell Travis how to run our test suite
+    4. Tell Travis how to deploy our code to AWS
+* NOTE: When running `npm run test` with CI we have to use the `-- -- coverage` option so that jest doesn't infinitely hang on the test results CLI menu
+* Here is an example of a TravisCI configuration file:
+```yaml
+sudo: required # Sudo required tells Travis that we need superuser permissions to run this build
+language: generic
+
+services:
+  - docker # Tells Travis to install docker
+
+before_install: # Series of command before the build is run
+  - docker build -t trentgillis/docker-react -f Dockerfile.dev .
+
+script: # Series of commands to run as part of the build
+  - docker run -e CI=true trentgillis/docker-react npm run test -- --coverage # Runs the tests for our React applications
+
+deploy:
+  provider: elasticbeanstalk
+  region: "us-west-2"
+  app: "docker-react"
+  env: "DockerReact-env"
+  bucket_name: elasticbeanstalk-us-west-2-425677955837 # When Travis deploys our files, it'll zip all of our files up and put them in an S3 bucket which is essentially a hard drive on AWS. This is found under the S3 service on AWS
+  bucket_path: "docker-react" # Path to this apps directory inside of the S3 instance being used by elasticbeanstalk
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
+```
+* It's worth noting that when using AWS Elasticbeanstalk we need to add the `EXPOSE 80` command to our `Dockerfile`
+  * This command actually does nothing by default, by Elasticbeanstalk will use to in order to know which ports to expose in the docker container
+* Due to a bug with Elasticbeanstalk, we may need to update our `Dockerfile` to use an unnamed builder in our multi-stage containers
+* 
