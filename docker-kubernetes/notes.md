@@ -336,7 +336,7 @@ test:
   * To copy resources from a different phase, we need to use the `--from` argument to the `COPY` statement
     * For example: `FROM --phase=builder /app/build /usr/share/nginx/html`
 
-## Section 7: Continuous Integration and Deployment with AWSss
+## Section 7: Continuous Integration and Deployment with AWS
 
 * The entire idea of TravisCI is to watch for any time we push changes to our GitHub repo where anytime we push code to GitHub, it tap on the shoulder of Travis and informs it that there is new code present in the repository
   * Once Travis has been informed that new code is present in the repository, it pull down all of the new code and then allows us the ability to do some amount of work
@@ -378,4 +378,5 @@ deploy:
 * It's worth noting that when using AWS Elasticbeanstalk we need to add the `EXPOSE 80` command to our `Dockerfile`
   * This command actually does nothing by default, by Elasticbeanstalk will use to in order to know which ports to expose in the docker container
 * Due to a bug with Elasticbeanstalk, we may need to update our `Dockerfile` to use an unnamed builder in our multi-stage containers
-* 
+
+## Section 8: Building a Multi-Container Application
