@@ -242,3 +242,63 @@ func main {
   * Reference types include `slices`, `maps`. `channels`, `pointers` and `functions`
 * When working with value types, we need to worry about using pointers
   * Value types include `int`, `float`, `string`, `bool` and `structs`
+
+## Section 5: Maps
+* Maps are similar to structs, but with some differences
+* A map is a collection of key-value pairs
+  * Think object in JS or dictionary in Python
+* In a map, all of the keys must be of the same type, and all of the values must be of the same type
+  * The keys and values in maps are statically typed
+* There are a couple of different ways that we can create a map
+```golang
+package main
+
+import "fmt"
+
+func main() {
+  // First way of declaring a map
+  // The following code declares a map where the keys and values are of type string
+  colors := map[string]string {
+    "red": "#ff0000",
+    "green": "#00ff00",
+    "blue": "#0000ff",
+  }
+
+  // Second way of declaring a map
+  // This code also declares a map where the keys and values are of type string
+  var colors map[string]string
+
+  // Third way of declaring a map
+  // This is pretty much the same as the method of creating a map used above 
+  colors := make(map[string]string)
+
+  // We can modify a map using the [] syntax
+  // We do not get the dot syntax when using maps
+  colors["white"] = "#ffffff"
+
+  // To delete an element from a map we can use the delete method
+  delete(colors, "white")
+
+  // To iterate over a maps keys and values we can do the following
+  for key, value := range colors {
+    fmt.Println("Hex code for", color, "is", value)
+  }
+}
+```
+* Maps versus Structs
+  * Maps:
+    * all keys must be of the same type
+    * all values must be of the same type
+    * keys are indexed and we can iterate over them
+    * maps are used to represent a collection of related properties
+    * we don't need to know all of the keys at compile time
+    * maps are a reference type
+  * Structs:
+    * Value can be of different types
+    * Keys do NOT support indexing and cannot be iterated over
+    * We need to know all of the different fields at compile time
+    * Structs are used to represent a "thing" with a lot of different properties
+    * Structs are a value type
+* We want to use a map when representing a bunch of values that are all closely related
+  * Maps are also go to use when we don't know all of the values at compile time
+* Structs are more commonly used than maps
