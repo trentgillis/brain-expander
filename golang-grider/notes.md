@@ -179,3 +179,66 @@ func TestNewDeck(t *testing.T) {
 	}
 }
 ```
+
+## Section 4: Organizing Data With Structs
+* Go gives us access to the `struct` data structure
+  * A `struct` is a collection of properties that are related together
+  * With our sick JS background, we can think of structs as plain JS objects
+* Struct example:
+```golang
+package main
+
+type person struct {
+  firstName string
+  lastName  string
+}
+
+func main {
+  alex := person{"Alex", "Anderson"} // relies on ordering of properties in struct def
+  // -- or --
+  alex := person{ // More explicit way of declaring variables from struct types
+    firstName: "Alex",
+    lastName: "Anderson"}
+  // -- or --
+  var alex person // Empty with manual entry
+  alex.firstName = "Alex"
+  alex.lastName = "Anderson"
+}
+```
+* When we create a variable in Go and do not assign it a value, it receives a zero value
+  * A zero value is an initial value given to unassigned value, for example, string types receive the zero value of `""` and int types get the zero value `0`
+* We can create nested structs as well
+  * For example:
+  ```golang
+  type contactInfo struct {
+    email string
+    zipCode int
+  }
+
+  type person struct {
+    firstName string
+    lastName string
+    contact contactInfo
+  }
+  ```
+
+#### Pointers
+* Go is a pass by value language, meaning that when a value is passed into a function, Go takes the value/struct and copies the data from the struct into a new location in memory and uses that copy for the functions execution
+* Pointer operators:
+  * `&variable` - Give me the memory address of the value this variable is pointing at
+    * Turn value into address with `&value`
+  * `*pointer` - Give me the value this memory address is pointing at
+    * Turn address into value with `*address`
+  * Seeing the `*` in from of a type is much different than in front of a variable. `*person` would say that we're working with a pointer to a person while `*pointerToPerson` is an operator meaning that we want to manipulate the value the pointer is referencing
+* In Go, if we define a function with a receiver with a pointer type, we can call that method with either a pointer to our type *or* just our type as we normally would. Go will figure it out for us
+* Slices under the hood
+  * When we create a slice, Go sets up a couple of data structures for us
+    1. The slice which consists of 3 elements: a pointer to the head of the slice, the capacity of the slice, and the length of the slice
+    2. An array containing all of the elements of the slice
+  * When passing a slice to a function, it is still passed by value, but it's pointer to head value points to the same location as the original array, resulting modifications to the slice's records persisting even when it looks like we're not passing by reference
+  * Slices are what are known a a reference type because it is a reference to another structure in memory
+    * We don't care if we're using copies of reference types because those types always reference their values in memory via a pointer anyways
+* When working with reference types, we don't need to worry about using pointers
+  * Reference types include `slices`, `maps`. `channels`, `pointers` and `functions`
+* When working with value types, we need to worry about using pointers
+  * Value types include `int`, `float`, `string`, `bool` and `structs`
